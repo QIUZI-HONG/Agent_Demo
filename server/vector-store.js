@@ -62,8 +62,11 @@ function load() {
 }
 
 function save(db) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(db));
+  /* Serverless 环境（如 Vercel）文件系统只读：写入失败时降级为内存模式，不中断 */
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(FILE, JSON.stringify(db));
+  } catch (e) { /* 忽略：无持久化环境下仍可用当前内存数据 */ }
 }
 
 /* 搜索：channel 传 null 表示全库 */

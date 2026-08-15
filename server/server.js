@@ -200,5 +200,9 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '127.0.0.1'; // 默认仅本机可访问，防外部刷接口
-app.listen(PORT, HOST, () => console.log('TubeInsight server: http://localhost:' + PORT));
+/* 直接运行时启动监听；被 Vercel 等 Serverless 引用时仅导出 app */
+if (require.main === module) {
+  const HOST = process.env.HOST || '127.0.0.1'; // 默认仅本机可访问，防外部刷接口
+  app.listen(PORT, HOST, () => console.log('TubeInsight server: http://localhost:' + PORT));
+}
+module.exports = app;
