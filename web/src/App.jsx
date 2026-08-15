@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { analyze as apiAnalyze, saveConfig, getConfig, ingest as apiIngest, ask as apiAsk, testConnection as apiTestConnection, ecomAnalyze, ecomDashboard, ecomScript, ecomPrompts, ecomData } from './api.js';
+import { makeDemo, ruleConclusion, demoAsk, ecomAnalyzeDemo, ecomScriptDemo, ecomPromptsDemo, ecomDataDemo, detectStaticMode } from './demoData.js';
 
 /* ============ 图标 ============ */
 const ICONS = {
@@ -41,19 +42,6 @@ const ago = (ts) => {
 const LOAD = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
 const SAVE = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 
-function ruleConclusion(d) {
-  const s = d.subs.includes('亿') ? parseFloat(d.subs) * 1e8 : (d.subs.includes('万') ? parseFloat(d.subs) * 1e4 : (parseFloat(d.subs) || 0));
-  const e = parseFloat(d.engage) || 0;
-  const list = [];
-  if (s >= 1e8) list.push('订阅 ' + d.subs + '，属于头部频道，适合作为行业标杆对标分析。');
-  else if (s >= 1e6) list.push('订阅 ' + d.subs + '，腰部成长型频道，近 30 天播放 ' + d.views30 + '，趋势 ' + d.trend + '，增速健康。');
-  else list.push('订阅 ' + d.subs + '，成长型频道，建议用爆款选题快速测试方向。');
-  if (e >= 8) list.push('互动率 ' + d.engage + ' 高于同类均值，粉丝粘性强，可加大评论引导与系列化内容。');
-  else if (e >= 5) list.push('互动率 ' + d.engage + ' 处于中游，建议在结尾加提问 / 投票等互动钩子。');
-  else list.push('互动率 ' + d.engage + ' 偏低，建议缩短开头铺垫、直接给结论，提升完播率。');
-  list.push('建议下一步：生成 5 个选题方向 / 对比同类频道 / 深挖单条爆款视频。');
-  return list;
-}
 function themeBars(name) {
   const h = hash(name.toLowerCase());
   // 注意：必须用无符号右移 >>>（h 可能超过 2^31，>> 会产生负数）
@@ -154,7 +142,10 @@ export default function App() {
   const [last, setLast] = useState(null);
   const [keys, setKeys] = useState({ ytKey: '', llmKey: '' });
   const [mobileNav, setMobileNav] = useState(false);
+  const [staticMode, setStaticMode] = useState(false);
   const toastRef = useRef(null);
+
+  useEffect(() => { detectStaticMode().then(setStaticMode).catch(() => setStaticMode(true)); }, []);
 
   useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
   useEffect(() => { SAVE('ti_analyses', analyses); }, [analyses]);
@@ -185,6 +176,7 @@ export default function App() {
       <div className="main">
         <Topbar theme={theme} setTheme={setTheme} model={model} setModel={setModel} showToast={showToast} onMenu={() => setMobileNav(true)} />
         <main className="content">
+          {staticMode && <div className="banner" style={{ marginBottom: 16 }}>静态演示模式：在线展示版，当前使用内置演示数据。完整功能（真实 LLM / RAG / YouTube）请本地运行：git clone 后 <b>start.bat</b> 启动。</div>}
           {page === 'dashboard' && <Dashboard analyses={analyses} workflows={workflows} goto={goto} onOpen={openAnalysis} />}
           {page === 'chat' && <ChatPage setAnalyses={setAnalyses} setLast={setLast} showToast={showToast} goto={goto} />}
           {page === 'channel' && <ChannelPage last={last} goto={goto} />}
@@ -379,7 +371,7 @@ function ChatPage({ setAnalyses, setLast, showToast, goto }) {
     tlSet(1, 'run'); await wait(350); tlSet(1, 'done', 'getChannelStats · 0.3s');
     tlSet(2, 'run'); await wait(600);
     let r;
-    try { r = await apiAnalyze(name); } catch (e) { r = { data: null, real: false, concl: ['分析服务暂不可用，请确认后端已启动（node server/server.js）。'], note: '（后端未连接）' }; }
+    try { r = await apiAnalyze(name); } catch (e) { const d = makeDemo(name); r = { data: d, real: false, concl: ruleConclusion(d), note: '（静态演示模式）' }; }
     tlSet(2, 'done', '0.8s');
     tlSet(3, 'run'); await wait(500); tlSet(3, 'done', '2.4s');
     const d = r.data || { name, handle: '', subs: '—', views: '—', views30: '—', engage: '—', trend: '—', videos: [] };
@@ -473,7 +465,7 @@ function ChannelPage({ last, goto }) {
       const r = await apiIngest(name);
       setRag({ loading: false, chunks: r.chunks, source: r.source, error: false });
     } catch (e) {
-      setRag({ loading: false, chunks: null, source: null, error: true });
+      setRag({ loading: false, chunks: 3, source: 'demo', error: false });
     }
   }, []);
 
@@ -494,7 +486,8 @@ function ChannelPage({ last, goto }) {
       setQa((list) => [{ q, answer: r.answer, sources: r.sources || [] }, ...list]);
       setQuestion('');
     } catch (err) {
-      setQa((list) => [{ q, answer: '问答服务暂不可用：' + err.message, sources: [] }, ...list]);
+      const dr = demoAsk(last.data.name, q);
+      setQa((list) => [{ q, answer: dr.answer + '（静态演示模式）', sources: dr.sources }, ...list]);
     }
     setAsking(false);
   }
@@ -709,7 +702,7 @@ function EcomPage({ showToast }) {
   const doPick = async () => {
     if (!kw.trim() || picking) return;
     setPicking(true); setPick(null);
-    try { setPick(await ecomAnalyze(kw)); } catch (e) { showToast('选品分析失败：' + e.message); }
+    try { setPick(await ecomAnalyze(kw)); } catch (e) { setPick(ecomAnalyzeDemo(kw)); }
     setPicking(false);
   };
 
@@ -730,7 +723,9 @@ function EcomPage({ showToast }) {
   const doAnalyzeData = async () => {
     if (!csv.trim() || analyzingData) return;
     setAnalyzingData(true); setRealBoard(null);
-    try { setRealBoard(await ecomData(csv)); } catch (e) { showToast('数据解析失败：' + e.message); }
+    try { setRealBoard(await ecomData(csv)); } catch (e) {
+      try { setRealBoard(ecomDataDemo(csv)); } catch (e2) { showToast('数据解析失败：' + e2.message); }
+    }
     setAnalyzingData(false);
   };
 
@@ -745,7 +740,7 @@ function EcomPage({ showToast }) {
     setScriptSteps(['running', 'wait', 'wait']);
     await wait(600); setScriptSteps(['done', 'running', 'wait']);
     await wait(700); setScriptSteps(['done', 'done', 'running']);
-    try { setScript(await ecomScript(prod)); } catch (e) { showToast('脚本生成失败：' + e.message); }
+    try { setScript(await ecomScript(prod)); } catch (e) { setScript(ecomScriptDemo(prod)); }
     await wait(500); setScriptSteps(['done', 'done', 'done']);
     setScripting(false);
   };
@@ -758,7 +753,7 @@ function EcomPage({ showToast }) {
   const doPrompts = async () => {
     if (!iprod.trim() || prompting) return;
     setPrompting(true); setPrompts(null);
-    try { setPrompts(await ecomPrompts(iprod, istyle)); } catch (e) { showToast('Prompt 生成失败：' + e.message); }
+    try { setPrompts(await ecomPrompts(iprod, istyle)); } catch (e) { setPrompts(ecomPromptsDemo(iprod, istyle)); }
     setPrompting(false);
   };
 
