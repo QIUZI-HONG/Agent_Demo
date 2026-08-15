@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TubeInsight · 极简可运行版</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ Sidebar ============ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-badge"><svg viewBox="0 0 24 24" width="14" height="14"><rect x="1.5" y="4" width="21" height="16" rx="5" fill="#fff" opacity=".25"/><polygon points="9,8 17,12 9,16" fill="#fff"/></svg></span>
+      <span>TubeInsight</span>
+      <span class="chip-preview">可运行版</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-page="dashboard"><i data-icon="home"></i>工作台</button>
+      <button class="nav-item" data-page="chat"><i data-icon="chat"></i>Agent 对话</button>
+      <button class="nav-item" data-page="channel"><i data-icon="chart"></i>频道洞察</button>
+      <button class="nav-item" data-page="workflow"><i data-icon="zap"></i>内容军师</button>
+      <button class="nav-item" data-page="settings"><i data-icon="settings"></i>设置</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="mcp-status"><span class="status-dot"></span>MCP Server 在线</div>
+      <div class="user-card">
+        <div class="avatar sm">E</div>
+        <div><div class="u-name">Eason Chen</div><div class="u-role">实习生</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ Main ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="search"><i data-icon="search"></i><span>搜索频道 / 视频 / 历史分析</span><span class="kbd">⌘K</span></div>
+      <div class="top-actions">
+        <button class="model-select" id="modelSelect">
+          <span class="m-status"></span><span class="m-name">DeepSeek-V3</span><i data-icon="chevron"></i>
+        </button>
+        <div class="dropdown" id="modelDropdown">
+          <button class="model-opt" data-name="DeepSeek-V3">DeepSeek-V3 · 低延迟</button>
+          <button class="model-opt" data-name="Claude 4.5 Sonnet">Claude 4.5 Sonnet · 顶级</button>
+          <button class="model-opt" data-name="GPT-4.1">GPT-4.1 · 综合</button>
+          <div class="dropdown-note">开发期建议低成本模型，生产可切换顶级模型</div>
+        </div>
+        <button class="icon-btn" id="themeToggle" title="切换主题"><i data-icon="moon"></i></button>
+        <button class="icon-btn" id="langToggle" title="切换语言">中 / EN</button>
+        <div class="avatar">E</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ============ 工作台 ============ -->
+      <section class="page active" id="page-dashboard">
+        <div class="greet">
+          <div>
+            <h1>上午好，Eason 👋</h1>
+            <p>你的频道分析助手已就绪，输入频道名就能跑通完整流程。</p>
+          </div>
+          <div class="greet-actions">
+            <button class="btn btn-primary" data-goto="chat"><i data-icon="plus"></i>新建分析</button>
+            <button class="btn btn-secondary" data-goto="workflow"><i data-icon="zap"></i>内容军师</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card"><span class="stat-label">已分析频道</span><span class="stat-value" id="dsCount">0</span><span class="stat-sub">累计</span></div>
+          <div class="stat-card"><span class="stat-label">进行中任务</span><span class="stat-value" id="dsTasks">0 / 0</span><span class="stat-sub">全部完成</span></div>
+          <div class="stat-card"><span class="stat-label">API 调用</span><span class="stat-value" id="dsApi">0</span><span class="stat-sub">本次会话累计</span></div>
+          <div class="stat-card"><span class="stat-label">最近播放趋势</span><span class="stat-value" id="dsTrend">—</span><span class="stat-sub" id="dsTrendSub">分析后更新</span></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">最近分析 <span class="link-more" data-goto="chat">开始新分析 →</span></div>
+            <div id="dashList"><div class="empty-sm">还没有分析记录，去对话页试试</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">热门频道 Top 5</div>
+            <div class="hbars">
+              <div class="hbar"><span class="hbar-label">MrBeast</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div><span class="hbar-val">2.1 亿</span></div>
+              <div class="hbar"><span class="hbar-label">TechTok</span><div class="hbar-track"><div class="hbar-fill" style="width:70%"></div></div><span class="hbar-val">1.2 亿</span></div>
+              <div class="hbar"><span class="hbar-label">MusicLab</span><div class="hbar-track"><div class="hbar-fill" style="width:55%"></div></div><span class="hbar-val">8,900 万</span></div>
+              <div class="hbar"><span class="hbar-label">FitWorld</span><div class="hbar-track"><div class="hbar-fill" style="width:42%"></div></div><span class="hbar-val">6,500 万</span></div>
+              <div class="hbar"><span class="hbar-label">CodeDaily</span><div class="hbar-track"><div class="hbar-fill" style="width:30%"></div></div><span class="hbar-val">4,200 万</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">最近工作流</div>
+          <div class="wf-list" id="dashWf"><div class="empty-sm">还没有工作流记录，去内容军师页跑一次</div></div>
+        </div>
+      </section>
+
+      <!-- ============ Agent 对话 ============ -->
+      <section class="page" id="page-chat">
+        <div class="chat-grid">
+          <div class="chat-panel">
+            <div class="chat-head">
+              <span class="chat-title">Agent 对话 · 输入频道名即可分析</span>
+              <button class="btn btn-sm btn-secondary" id="newChat"><i data-icon="plus"></i>新会话</button>
+            </div>
+            <div class="messages" id="messages">
+              <div class="msg">
+                <div class="msg-avatar ai">AI</div>
+                <div class="bubble">
+                  你好！我是频道分析 Agent。直接告诉我频道名，例如：
+                  <b>MrBeast</b>、<b>TechTok</b>、<b>CodeDaily</b>，或者随便输入一个名字试试。<br>
+                  我会展示每一步工具调用过程，并给出分析结论 👇
+                </div>
+              </div>
+            </div>
+            <form class="composer" id="composer">
+              <input id="chatInput" placeholder="输入频道名，如 MrBeast / TechTok / CodeDaily…" autocomplete="off">
+              <button class="send-btn" type="submit" title="发送"><i data-icon="send"></i></button>
+            </form>
+            <div class="chips" style="margin-top:8px">
+              试试：
+              <button class="chip" data-name="MrBeast">MrBeast</button>
+              <button class="chip" data-name="TechTok">TechTok</button>
+              <button class="chip" data-name="CodeDaily">CodeDaily</button>
+              <button class="chip" data-name="随机新频道">随机新频道</button>
+            </div>
+          </div>
+
+          <div class="context-panel">
+            <div class="card context-card">
+              <div class="card-title">会话上下文</div>
+              <div class="chips" id="ctxChips"><span class="chip chip-add" id="ctxAdd">＋ 分析后自动添加</span></div>
+            </div>
+            <div class="card context-card">
+              <div class="card-title">Tool Calling 时间线 <span class="tag tag-ai">实时</span></div>
+              <div class="timeline" id="timeline">
+                <div class="timeline-item" data-step="0">
+                  <span class="step-ico wait">○</span>
+                  <div class="t-main"><div class="t-name">① 解析请求</div><div class="t-time">—</div></div>
+                </div>
+                <div class="timeline-item" data-step="1">
+                  <span class="step-ico wait">○</span>
+                  <div class="t-main"><div class="t-name">② 选择工具</div><div class="t-time">—</div></div>
+                </div>
+                <div class="timeline-item" data-step="2">
+                  <span class="step-ico wait">○</span>
+                  <div class="t-main"><div class="t-name">③ 调用 getChannelStats</div><div class="t-time">—</div></div>
+                </div>
+                <div class="timeline-item" data-step="3">
+                  <span class="step-ico wait">○</span>
+                  <div class="t-main"><div class="t-name">④ 分析生成结论</div><div class="t-time">—</div></div>
+                </div>
+              </div>
+              <div class="tc-note">AI 的每一步行为都会在这里透明展示</div>
+            </div>
+            <div class="card context-card">
+              <div class="card-title">建议下一步</div>
+              <div class="suggest-list">
+                <button class="suggest-btn" data-goto="workflow"><span class="s-ico">⚡</span>生成选题建议（内容军师）</button>
+                <button class="suggest-btn" data-toast="📊 对比图表已生成（演示）"><span class="s-ico">📊</span>生成对比图表</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 频道洞察 ============ -->
+      <section class="page" id="page-channel">
+        <div class="card empty" id="chEmpty">
+          <div class="e-ico">📡</div>
+          <p>还没有分析过频道。去对话页输入一个频道名，结果会自动展示在这里。</p>
+          <button class="btn btn-primary" data-goto="chat"><i data-icon="plus"></i>去分析一个频道</button>
+        </div>
+
+        <div id="chContent" hidden>
+          <div class="channel-head">
+            <div class="ch-left">
+              <span class="ch-avatar"><i data-icon="play"></i></span>
+              <div>
+                <h1><span id="chNameOut">—</span><span id="chBadge" class="data-badge demo">演示数据</span></h1>
+                <div class="ch-meta" id="chMeta">—</div>
+              </div>
+            </div>
+            <div class="greet-actions">
+              <button class="btn btn-secondary" data-goto="workflow"><i data-icon="zap"></i>生成选题建议</button>
+              <button class="btn btn-secondary" data-toast="已加入知识库（演示）"><i data-icon="plus"></i>加入知识库</button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat-card"><span class="stat-label">订阅数</span><span class="stat-value" id="stSubs">—</span><span class="stat-sub" id="stSubsD">—</span></div>
+            <div class="stat-card"><span class="stat-label">总播放</span><span class="stat-value" id="stViews">—</span><span class="stat-sub" id="stViewsD">累计</span></div>
+            <div class="stat-card"><span class="stat-label">近30天播放</span><span class="stat-value" id="stViews30">—</span><span class="stat-delta" id="stTrend">—</span></div>
+            <div class="stat-card"><span class="stat-label">互动率</span><span class="stat-value" id="stEngage">—</span><span class="stat-sub" id="stEngageD">估算</span></div>
+          </div>
+
+          <div class="grid-2-3">
+            <div class="card">
+              <div class="card-title">近 30 天数据概览 <span class="tabs"><button class="tab active">30天</button></span></div>
+              <svg class="line-chart" viewBox="0 0 560 120" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="gTrend" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--brand)" stop-opacity=".28"/>
+                    <stop offset="100%" stop-color="var(--brand)" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="30" x2="560" y2="30" class="grid-l"/>
+                <line x1="0" y1="60" x2="560" y2="60" class="grid-l"/>
+                <line x1="0" y1="90" x2="560" y2="90" class="grid-l"/>
+                <path d="M0,92 L45,86 L90,88 L135,70 L180,64 L225,68 L270,46 L315,42 L360,50 L405,34 L450,28 L495,38 L540,22 L560,24 L560,120 L0,120 Z" fill="url(#gTrend)"/>
+                <path d="M0,92 L45,86 L90,88 L135,70 L180,64 L225,68 L270,46 L315,42 L360,50 L405,34 L450,28 L495,38 L540,22 L560,24" class="line-main"/>
+                <circle cx="560" cy="24" r="3.5" fill="var(--brand)"/>
+              </svg>
+              <div class="legend"><span class="lg-item"><span class="lg-dot" style="background:var(--brand)"></span>播放量走势（演示曲线）</span></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><span class="ai-label">🟣</span> AI 内容理解（RAG）</div>
+              <p class="ai-desc">基于最近字幕内容理解，频道主题分布：</p>
+              <div class="hbars sm" id="aiBars"></div>
+              <div class="cites" id="aiCite"><span class="tag tag-gray">🔗 引用 N 段字幕</span></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <div class="card-title">最近视频</div>
+            <table class="table">
+              <thead><tr><th>标题</th><th>播放</th><th>状态</th></tr></thead>
+              <tbody id="vTable"></tbody>
+            </table>
+          </div>
+
+          <div class="card ai-card" style="margin-top:16px">
+            <div class="card-title">🟣 AI 分析结论</div>
+            <ul id="conclList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 内容军师 ============ -->
+      <section class="page" id="page-workflow">
+        <div class="card">
+          <div class="card-title">⚡ 内容军师 · 配置输入</div>
+          <div class="wf-config">
+            <div class="field grow1"><label>频道选择</label><select class="input" id="wfChannel"></select></div>
+            <div class="field grow2"><label>主题 / 方向</label><input class="input" id="wfTopic" value="AI 工具测评"></div>
+            <div class="field"><label>目标</label><select class="input" id="wfGoal"><option>涨粉</option><option>互动率</option><option>变现</option></select></div>
+            <div class="field"><label>&nbsp;</label><button class="btn btn-primary" id="wfRun"><i data-icon="zap"></i>开始运行</button></div>
+          </div>
+        </div>
+
+        <div class="stepper" id="wfStepper">
+          <div class="step done"><span class="dot">✓</span><span class="lbl">① 选题分析</span></div>
+          <div class="conn done"></div>
+          <div class="step"><span class="dot"></span><span class="lbl">② 竞品对比</span></div>
+          <div class="conn"></div>
+          <div class="step"><span class="dot"></span><span class="lbl">③ 标题生成</span></div>
+          <div class="conn"></div>
+          <div class="step"><span class="dot"></span><span class="lbl">④ 脚本生成</span></div>
+          <div class="conn"></div>
+          <div class="step"><span class="dot"></span><span class="lbl">⑤ 发布建议</span></div>
+        </div>
+
+        <div id="wfResults"></div>
+      </section>
+
+      <!-- ============ 设置 ============ -->
+      <section class="page" id="page-settings">
+        <div class="greet"><div><h1>设置</h1><p>模型、密钥与数据源管理</p></div></div>
+        <div class="banner" id="keyBanner">当前为<b>演示数据</b>，用于先跑通流程。在下方填入 YouTube Data API Key 后自动改用真实数据；填 LLM Key 后分析结论由真实大模型生成。Key 只保存在本机浏览器。</div>
+
+        <div class="grid-2" style="margin-top:16px">
+          <div class="card">
+            <div class="card-title">模型</div>
+            <div class="field"><label>默认模型</label><select class="input" id="modelSet"><option>DeepSeek-V3（开发期）</option><option>Claude 4.5 Sonnet</option><option>GPT-4.1</option></select></div>
+            <div class="field"><label>Temperature <span class="hint">0.7 · 创意与稳定平衡</span></label><input type="range" min="0" max="1" step="0.1" value="0.7" class="range"></div>
+            <div class="hint">开发期建议低成本模型，生产环境可切换顶级模型</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">API Key</div>
+            <div class="field"><label>YouTube Data API</label><input class="input" id="ytKey" placeholder="粘贴 YouTube Data API Key（console.cloud.google.com 申请）"></div>
+            <div class="field"><label>LLM API Key（可选）</label><input class="input" id="llmKey" placeholder="粘贴 LLM Key，如 DeepSeek 开放平台 key"></div>
+            <button class="btn btn-secondary" id="saveKeys"><i data-icon="check"></i>保存到本机</button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">MCP <span class="tag tag-success">● 在线</span></div>
+            <div class="field"><label>Server 地址</label><input class="input mono" value="http://localhost:3000/mcp" readonly></div>
+            <button class="btn btn-secondary" data-copy="http://localhost:3000/mcp"><i data-icon="copy"></i>复制配置</button>
+            <div class="hint" style="margin-top:10px">本服务后续将暴露为标准 MCP Server，可接入 Claude Desktop</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">通用</div>
+            <div class="field"><label>语言</label><select class="input" id="langSet"><option>简体中文</option><option>English</option></select></div>
+            <div class="field"><label>主题</label><select class="input" id="themeSet"><option value="dark">深色</option><option value="light">浅色</option></select></div>
+            <button class="btn btn-danger-ghost" id="clearData"><i data-icon="trash"></i>清空本地数据（分析记录）</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

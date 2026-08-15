@@ -1,0 +1,14 @@
+# 依赖与构建产物
+node_modules/
+dist/
+
+# 本地数据（含 Key 与向量库，绝不提交）
+server/data/
+
+# 日志与系统文件
+*.log
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
