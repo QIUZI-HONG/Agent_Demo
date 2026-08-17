@@ -211,6 +211,33 @@ export function ecomDataDemo(text) {
   };
 }
 
+/* ---------- 数据看板（演示生成器，与 server/ecommerce-data.js 的 dashboardData 一致） ---------- */
+export function ecomDashboardDemo() {
+  const s = hash('dashboard');
+  const orders = [], traffic = [], days = [];
+  let o = 60 + s % 60, t = 3000 + s % 2500;
+  for (let i = 0; i < 30; i++) {
+    o += Math.round(((s >> (i % 10)) % 9) - 4);
+    t += Math.round(((s >> (i % 6)) % 300) - 150);
+    orders.push(Math.max(o, 20));
+    traffic.push(Math.max(t, 1200));
+    days.push((i + 1) + ' 日');
+  }
+  const total = orders.reduce((a, x) => a + x, 0);
+  const stats = {
+    revenue: '$' + (total * 4.2).toLocaleString('en-US'),
+    orders: total.toLocaleString('en-US'),
+    conv: (2.1 + (s % 30) / 10).toFixed(1) + '%',
+    adRoas: (2.8 + (s % 40) / 10).toFixed(1) + 'x'
+  };
+  const competitors = [
+    { name: '竞品 A（头部）', price: '$12.9', sales: '8.2 万', rating: '4.8', gap: '价格高 30%' },
+    { name: '竞品 B（腰部）', price: '$9.9', sales: '3.1 万', rating: '4.6', gap: '赠品少 2 个' },
+    { name: '本店（目标）', price: '$8.9', sales: '0.8 万', rating: '4.7', gap: '价格有优势' }
+  ];
+  return { days, orders, traffic, stats, competitors, source: 'demo' };
+}
+
 /* ---------- 静态模式检测 ---------- */
 let staticMode = null;
 export async function detectStaticMode() {

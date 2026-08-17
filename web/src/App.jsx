@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { analyze as apiAnalyze, saveConfig, getConfig, ingest as apiIngest, ask as apiAsk, testConnection as apiTestConnection, ecomAnalyze, ecomDashboard, ecomScript, ecomPrompts, ecomData } from './api.js';
-import { makeDemo, ruleConclusion, demoAsk, ecomAnalyzeDemo, ecomScriptDemo, ecomPromptsDemo, ecomDataDemo, detectStaticMode } from './demoData.js';
+import { makeDemo, ruleConclusion, demoAsk, ecomAnalyzeDemo, ecomScriptDemo, ecomPromptsDemo, ecomDataDemo, ecomDashboardDemo, detectStaticMode } from './demoData.js';
 
 /* ============ 图标 ============ */
 const ICONS = {
@@ -182,7 +182,7 @@ export default function App() {
           {page === 'channel' && <ChannelPage last={last} goto={goto} />}
           {page === 'workflow' && <WorkflowPage analyses={analyses} setWorkflows={setWorkflows} last={last} showToast={showToast} />}
           {page === 'ecom' && <EcomPage showToast={showToast} />}
-          {page === 'settings' && <SettingsPage keys={keys} setKeys={setKeys} showToast={showToast} theme={theme} setTheme={setTheme} />}
+          {page === 'settings' && <SettingsPage keys={keys} setKeys={setKeys} showToast={showToast} theme={theme} setTheme={setTheme} staticMode={staticMode} />}
         </main>
       </div>
       <div className={'toast' + (toastMsg ? ' show' : '')}>{toastMsg}</div>
@@ -711,7 +711,7 @@ function EcomPage({ showToast }) {
   const [csv, setCsv] = useState('');
   const [realBoard, setRealBoard] = useState(null);
   const [analyzingData, setAnalyzingData] = useState(false);
-  useEffect(() => { ecomDashboard().then(setBoard).catch(() => {}); }, []);
+  useEffect(() => { ecomDashboard().then(setBoard).catch(() => setBoard(ecomDashboardDemo())); }, []);
   const EXAMPLE_CSV = [
     '日期,订单数,流量',
     '5月1日,86,3200', '5月2日,92,3450', '5月3日,71,2890', '5月4日,105,4120',
@@ -1027,7 +1027,7 @@ function EcomPage({ showToast }) {
 }
 
 /* ============ 设置 ============ */
-function SettingsPage({ keys, setKeys, showToast, theme, setTheme }) {
+function SettingsPage({ keys, setKeys, showToast, theme, setTheme, staticMode }) {
   const [yt, setYt] = useState('');
   const [llm, setLlm] = useState('');
   const [conn, setConn] = useState(null);
@@ -1035,6 +1035,7 @@ function SettingsPage({ keys, setKeys, showToast, theme, setTheme }) {
   useEffect(() => { setYt(''); setLlm(''); }, [keys]);
 
   const save = async () => {
+    if (staticMode) { showToast('在线展示版无法保存 Key，请本地运行（git clone 后 start.bat）'); return; }
     try {
       const r = await saveConfig(yt.trim(), llm.trim());
       setKeys({ ytKey: r.hasYt ? '已配置' : '', llmKey: r.hasLlm ? '已配置' : '' });
@@ -1043,6 +1044,7 @@ function SettingsPage({ keys, setKeys, showToast, theme, setTheme }) {
   };
 
   const test = async () => {
+    if (staticMode) { showToast('在线展示版无法连接后端，请本地运行后测试'); return; }
     setTesting(true); setConn(null);
     try {
       setConn(await apiTestConnection());
