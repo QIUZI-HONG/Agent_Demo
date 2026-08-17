@@ -1,5 +1,11 @@
 # TubeInsight · 真实项目骨架（React + Node）
 
+> 🚀 **在线 Demo（GitHub Pages，内置演示数据，打开即玩）**
+> 👉 **https://qiuzi-hong.github.io/Agent_Demo/**
+>
+> 无需安装、无需 Key，浏览器直接体验：频道分析 / Agent 对话 / RAG 视频问答 / 内容军师 / 跨境电商 AI 工具。
+> 完整功能（接真实 YouTube / LLM 数据）请按下方说明本地运行。
+
 前后端分离的真实项目结构。默认用演示数据跑通流程；配置 Key 后自动接真实 YouTube / LLM 数据。
 
 ## 目录结构
